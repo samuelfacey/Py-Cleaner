@@ -1,0 +1,7 @@
+{
+    "danger": "HOLD UP! ⚠️ The current path: $PATH$ is likely to have important system files ⚠️\nAlthough this could be a false alarm, the program will close after this message to avoid catastrophic system damage.\nPlease move the cleaner to a different folder and try again.",
+    "welcome": "Its time to clean up! \nBe sure that this folder: $PATH$ is the directory you wish to sort. \nPress enter to continue! ",
+    "warning": "Just a heads up, the path: $PATH$ could have some important data that should not be moved around. \nIf you are sure this is what you want, you may continue, or exit the program and move the cleaner folder elsewhere.",
+    "continue_selector": "There are $NUM$ items to be sorted. Would you like to continue? \nYes: Press 1, No: Press 2, List of files: Press 3\n",
+    "storing": "Sorting and storing now!"
+}

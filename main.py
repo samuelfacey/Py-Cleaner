@@ -66,7 +66,7 @@ def sort(container:list) -> dict:
     return sorted_items
 
 # Creates folders based on file type and moves files to new folders
-def store(items:dict, path:str, user_input:str):
+def store(items:dict, path:str):
 
     # Creates folder for files, then moves them from old path to new one
     def move(elements:tuple, old_path:str, new_path:str):
@@ -77,57 +77,68 @@ def store(items:dict, path:str, user_input:str):
 
         for f in files:
             shutil.move(f'{old_path}{os.sep}{f}',f'{new_path}{os.sep}{key}{os.sep}{f}')
+    
+    new_path = f'{Path(path)}{os.sep}New Folder with items'
+    Path(new_path).mkdir(parents=True, exist_ok=True)
 
-    # If user wants to place new folders in a parent folder
-    if user_input == '1':
-        new_path = f'{Path(path)}{os.sep}New Folder with items'
-        Path(new_path).mkdir(parents=True, exist_ok=True)
-
-        for i in items.items():
-            move(elements=i, old_path=path, new_path=new_path)
-    
-    # If user does not want a parent folder
-    elif user_input == '2':
-        new_path = path
-    
-        for i in items.items():
-            move(elements=i, old_path=path, new_path=new_path)
-    
-    else:
-        print('Invalid input, aborting...')
-        run()
+    for i in items.items():
+        move(elements=i, old_path=path, new_path=new_path)
 
 # Runs program
 def run(path:str):
 
-    if 'C:\Windows' in path or path == 'C:\\':
-        input(f'HOLD UP! ⚠️ {path} is likely to have important system files ⚠️\nAlthough this could be a false alarm, the program will close after this message to avoid catastrophic system damage.\nPlease move the cleaner to a different folder and try again.')
-        sys.exit('Quitting...')
-    input(f'It\'s time to clean up! \nBe sure that this folder: {path} is in the directory you wish to sort. \nPress enter to continue!')
-
-    if 'C:\Program Files' in path or 'C:\Program Files (x86)' in path:
-        input(f'Just a heads up, the path: {path} could have some important data that should not be moved around. \nYou may continue, or exit the program and move the cleaner folder elsewhere.')
-
     elements = search(path, name=name)
 
-    user_continue_input = input(f'There are {len(elements)} items to be sorted. Would you like to continue? \nYes: Press 1, No: Press 2, List of files: Press 3\n')
+    with open('messages.json') as m:
+        message:dict = json.load(m)
 
-    if user_continue_input == '1':
-        user_new_input = input('Would you like to place all of the sorted items in a new folder? Yes: Press 1, No: Press 2, Quit: Press 3\n')
-        if user_new_input == '3':
-            sys.exit('Quitting...')
-        store(sort(elements), path, user_new_input)
 
-    elif user_continue_input == '2':
-        sys.exit('Quitting...')
-    
-    elif user_continue_input == '3':
-        for e in elements:
-            print(e)
-        user_continue_input = input(f'There are {len(elements)} items to be sorted. Would you like to continue? \nYes: Press 1, No: Press 2\n')
-    else:
-        print('Invalid input')
-        run(path=path)
+    def input_controller(action:str, prompt:str):
+        
+        if action == 'quit':
+            input(prompt)
+            sys.exit('Qutting...')
+        
+        elif action == 'continue':
+            input(prompt)
+
+        elif action == 'store':
+            print(prompt)
+            store(items=sort(elements), path=path)
+            return
+        
+        elif action == 'list':
+            for e in elements:
+                print(e)
+            input_controller(action='selection', prompt=message['continue_selector'].replace('$NUM$', f'{len(elements)}'))
+            
+        elif action == 'selection':
+            user_choice = input(prompt)
+
+            if user_choice == '1':
+                input_controller(action='store', prompt=message['storing'])
+
+            elif user_choice == '2':
+                input_controller(action='quit', prompt='Press Enter to exit program.')
+            
+            elif user_choice == '3':
+                input_controller(action='list', prompt='')
+            
+            else:
+                print('Invalid input')
+                input_controller(action='selection', prompt=message['continue_selector'].replace('$NUM$', f'{len(elements)}'))
+
+
+    if 'C:\Windows' in path or path == 'C:\\':
+        input_controller(action='quit', prompt=message['danger'].replace('$PATH$', f'{path}'))
+
+    elif 'C:\Program Files' in path or 'C:\Program Files (x86)' in path:
+        input_controller(action='continue', prompt=message['warning'].replace('$PATH$', f'{path}'))
+
+    input_controller(action='continue', prompt=message['welcome'].replace('$PATH$', f'{path}'))
+
+    input_controller(action='selection', prompt=message['continue_selector'].replace('$NUM$', f'{len(elements)}'))
+
 
 if __name__ == '__main__':
     try:
